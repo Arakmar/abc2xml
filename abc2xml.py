@@ -434,7 +434,7 @@ def compChordTab ():    # avoid some typing work: returns mapping constant {ABC 
 
 def addElem (parent, child, level):
     indent = 2
-    chldrn = parent.getchildren ()
+    chldrn = list(parent)
     if chldrn:
         chldrn[-1].tail += indent * ' '
     else:
@@ -614,7 +614,7 @@ def mergeMeasure (m1, m2, slur_offset, voice_offset, rOpt, is_grand=0):
                 if n.find ('grace') == None and n.find ('chord') == None)
     dur1 -= sum (int (b.text) for b in m1.findall ('backup/duration'))
     nns, es = 0, []             # nns = number of real notes in m2
-    for e in m2.getchildren (): # scan all elements of m2
+    for e in list(m2) (): # scan all elements of m2
         if e.tag == 'attributes':
             if not is_grand: continue # no attribute merging for normal voices
             else: nns += 1       # but we do merge (clef) attributes for a grand staff
@@ -633,11 +633,11 @@ def mergePartList (parts, rOpt, is_grand=0):    # merge parts, make grand staff 
     def delAttrs (part):                # for the time being we only keep clef attributes
         xs = [(m, e) for m in part.findall ('measure') for e in m.findall ('attributes')]
         for m, e in xs:
-            for c in e.getchildren ():
+            for c in list(e):
                 if c.tag == 'clef': continue    # keep clef attribute
                 if c.tag == 'staff-details': continue    # keep staff-details attribute
                 e.remove (c)                    # delete all other attrinutes for higher staff numbers
-            if len (e.getchildren ()) == 0: m.remove (e)    # remove empty attributes element
+            if len (list(e)) == 0: m.remove (e)    # remove empty attributes element
 
     p1 = parts[0]
     for p2 in parts[1:]:
@@ -672,7 +672,7 @@ def mergeParts (parts, vids, staves, rOpt, is_grand=0):
 def mergePartMeasure (part, msre, ovrlaynum, rOpt):         # merge msre into last measure of part, only for overlays
     slurs = part.findall ('measure/note/notations/slur')    # find highest slur num in part
     slur_max = max ([int (slr.get ('number')) for slr in slurs] + [0])
-    last_msre = part.getchildren ()[-1] # last measure in part
+    last_msre = list(part)[-1] # last measure in part
     mergeMeasure (last_msre, msre, slur_max, ovrlaynum, rOpt) # voice offset = s.overlayVNum
 
 def setFristVoiceNameFromGroup (vids, vdefs): # vids = [vid], vdef = {vid -> (name, subname, voicedef)}
@@ -1138,7 +1138,7 @@ class MusicXml:
             if ',' in stp: ntn.set ('placement', 'below')
             if "'" in stp: ntn.set ('placement', 'above')
             addElem (nots, ntn, lev + 1)            
-        if nots.getchildren() != []:    # only add notations if not empty
+        if list(nots) != []:    # only add notations if not empty
             addElem (nt, nots, lev)
 
     def doArticulations (s, nt, nots, arts, lev):
